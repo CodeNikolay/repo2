@@ -33,3 +33,7 @@ class ForestGrid:
         not_activated_mask = cells_activated != ACTIVATED
         self.grid[binary_dilation(burning_mask) & tree_mask & not_activated_mask] = BURNING
         self.grid[burning_mask] = EMPTY
+
+    def set_parameters(self, p, f):
+        self.p = p
+        self.f = f
