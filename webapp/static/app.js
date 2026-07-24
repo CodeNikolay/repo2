@@ -37,7 +37,7 @@ async function drawGrid(flatGrid) {
     const canvas = document.getElementById("grid-canvas");
     const ctx = canvas.getContext("2d");
     const cell = canvas.width / size;
-    const colors = { 0: "#3d2b1f", 1: "#2d5a27", 2: "#e25822" };
+    const colors = { 0: "#000000", 1: "#2d5a27", 2: "#e25822" };
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
