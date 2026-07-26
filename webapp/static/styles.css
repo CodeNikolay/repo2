@@ -67,6 +67,8 @@ canvas {
   background-color: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges; /* fallback for browsers without pixelated support */
 }
 
 /* ---------- Controls row (buttons + stats, below canvas) ---------- */

@@ -9,6 +9,10 @@ const f_slider = document.getElementById("f-slider")
 const grid_slider = document.getElementById("grid-slider");
 const fps_slider = document.getElementById("fps-slider")
 
+const offscreen = document.createElement("canvas");
+const offCtx = offscreen.getContext("2d");
+const colors = { 0: "#000000", 1: "#2d5a27", 2: "#e25822" };
+
 async function createSession(grid_size = grid_slider.value, p = p_slider.value, f = f_slider.value, seed = null){
     const res = await fetch("/api/session", {
         method: "POST",
@@ -35,16 +39,23 @@ async function step() {
 
 async function drawGrid(flatGrid) {
     const canvas = document.getElementById("grid-canvas");
-    const ctx = canvas.getContext("2d");
-    const cell = canvas.width / size;
-    const colors = { 0: "#000000", 1: "#2d5a27", 2: "#e25822" };
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (offscreen.width !== size || offscreen.height !== size) {
+        offscreen.width = size;
+        offscreen.height = size;
+    }
+
     for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
-            ctx.fillStyle = colors[flatGrid[y * size + x]];
-            ctx.fillRect(x * cell, y * cell, Math.ceil(cell), Math.ceil(cell));
+            offCtx.fillStyle = colors[flatGrid[y * size + x]];
+            offCtx.fillRect(x, y, 1, 1);
         }
     }
+
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(offscreen, 0, 0, canvas.width, canvas.height);
 }
 
 async function changeParameters(p = p_slider.value, f = f_slider.value) {
@@ -86,4 +97,15 @@ fps_slider.addEventListener("input", (e) => {
     document.getElementById("fps").textContent = e.target.value;
 });
 
+function setupCanvasDPR() {
+    const canvas = document.getElementById("grid-canvas");
+    const dpr = window.devicePixelRatio || 1;
+    const cssSize = 440; // matches your current width/height attrs
+    canvas.width = cssSize * dpr;
+    canvas.height = cssSize * dpr;
+    canvas.style.width = cssSize + "px";
+    canvas.style.height = cssSize + "px";
+}
+
+setupCanvasDPR();
 createSession();
