@@ -23,12 +23,15 @@ class ForestGrid:
 
         # 2. lightning
         tree_mask = self.grid == TREE
-        not_activated_mask = ~cells_activated
         lightning = self.rng.random(size=self.grid.shape, dtype=np.float32) < self.f
-        self.grid[lightning & tree_mask & not_activated_mask] = BURNING
-        cells_activated[tree_mask & lightning & not_activated_mask] = ACTIVATED # unnecessary for later calculations (only trees can catch fire through spread), but keeps track of activated cells correctly
+        struck = lightning & tree_mask & ~cells_activated
+
+        self.grid[lightning & tree_mask & ~cells_activated] = BURNING
 
         # 3. fire spread
+        if struck.any():
+            
+
         tree_mask = self.grid == TREE
         not_activated_mask = cells_activated != ACTIVATED
         self.grid[binary_dilation(burning_mask) & tree_mask & not_activated_mask] = BURNING
