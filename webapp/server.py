@@ -40,6 +40,7 @@ def step(sid: str):
     fg.step()
     return {
         "grid": fg.grid.flatten().tolist(), # change to more efficient solution (bytes)
+        "last_struck": fg.last_struck,
         "density": float((fg.grid == 1).mean())
     }
 

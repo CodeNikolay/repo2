@@ -12,6 +12,7 @@ class ForestGrid:
         self.f = f
         self.grid = np.zeros((size, size), dtype=np.int8)
         self.rng = np.random.default_rng(seed)
+        self.last_struck = np.zeros((size, size))
 
     def step(self):
         burning_mask = self.grid == BURNING
@@ -42,6 +43,7 @@ class ForestGrid:
         # not_activated_mask = cells_activated != ACTIVATED
         # self.grid[binary_dilation(burning_mask) & tree_mask & not_activated_mask] = BURNING
 
+        self.last_struck = struck
         self.grid[burning_mask] = EMPTY
 
     def set_parameters(self, p, f):
