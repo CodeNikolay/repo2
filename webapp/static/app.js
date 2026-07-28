@@ -11,7 +11,7 @@ const fps_slider = document.getElementById("fps-slider")
 
 const offscreen = document.createElement("canvas");
 const offCtx = offscreen.getContext("2d");
-const colors = { 0: "#000000", 1: "#2d5a27", 2: "#e25822" };
+const colors = { 0: "#000000", 1: "#023020", 2: "#ffe135" };
 
 async function createSession(grid_size = grid_slider.value, p = p_slider.value, f = f_slider.value, seed = null){
     const res = await fetch("/api/session", {
