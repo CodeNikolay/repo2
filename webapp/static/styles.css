@@ -114,6 +114,60 @@ button:hover {
   font-weight: 600;
 }
 
+/* ---------- Animation toggle ---------- */
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-row span:first-child {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.toggle-row input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+  background-color: var(--border);
+  border-radius: 999px;
+  transition: background-color 0.15s ease;
+}
+
+.toggle-switch::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--text);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.toggle-row input[type="checkbox"]:checked + .toggle-switch {
+  background-color: var(--accent);
+}
+
+.toggle-row input[type="checkbox"]:checked + .toggle-switch::before {
+  transform: translateX(16px);
+  background-color: var(--surface);
+}
+
+.toggle-row:hover .toggle-switch {
+  border-color: var(--accent);
+}
+
 /* ---------- Sliders (stacked on the right) ---------- */
 
 .slider-group {

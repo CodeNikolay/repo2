@@ -1,6 +1,6 @@
 import uuid
+import numpy as np
 
-import math
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -38,9 +38,10 @@ def step(sid: str):
     if fg is None:
         raise HTTPException(404, "session not found")
     fg.step()
+    struck_coords = np.argwhere(fg.last_struck).tolist()
     return {
         "grid": fg.grid.flatten().tolist(), # change to more efficient solution (bytes)
-        "last_struck": fg.last_struck,
+        "last_struck": struck_coords,
         "density": float((fg.grid == 1).mean())
     }
 

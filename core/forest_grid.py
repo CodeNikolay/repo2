@@ -13,6 +13,7 @@ class ForestGrid:
         self.grid = np.zeros((size, size), dtype=np.int8)
         self.rng = np.random.default_rng(seed)
         self.last_struck = np.zeros((size, size))
+        self.burning = np.zeros((size, size))
 
     def step(self):
         burning_mask = self.grid == BURNING
@@ -27,7 +28,6 @@ class ForestGrid:
         tree_mask = self.grid == TREE
         lightning = self.rng.random(size=self.grid.shape, dtype=np.float32) < self.f
         struck = lightning & tree_mask & ~cells_activated
-        self.grid[struck] = BURNING
 
         # 3.a fire spread (burn whole cluster in one time step)
         # every cluster is labeled with a number, get the numbers of the struck cells and
@@ -39,6 +39,7 @@ class ForestGrid:
             self.grid[struck_clusters] = BURNING
 
         # # 3.b fire spread (burn only adjacent cells each time step)
+        # self.grid[struck] = BURNING
         # tree_mask = self.grid == TREE
         # not_activated_mask = cells_activated != ACTIVATED
         # self.grid[binary_dilation(burning_mask) & tree_mask & not_activated_mask] = BURNING

@@ -3,17 +3,21 @@ let stepCount = 0;
 let running = false;
 let playTimer = null;
 let size = 80;
+let stepInProgress = false;
 
 const p_slider = document.getElementById("p-slider")
 const f_slider = document.getElementById("f-slider")
 const grid_slider = document.getElementById("grid-slider");
 const fps_slider = document.getElementById("fps-slider")
-
+const animation_toggle = document.getElementById("animation-toggle");
 const offscreen = document.createElement("canvas");
 const offCtx = offscreen.getContext("2d");
 const colors = { 0: "#000000", 1: "#023020", 2: "#ffe135" };
 
 async function createSession(grid_size = grid_slider.value, p = p_slider.value, f = f_slider.value, seed = null){
+    stepInProgress = false;
+    document.getElementById("btn-step").disabled = false;
+
     const res = await fetch("/api/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -29,12 +33,101 @@ async function createSession(grid_size = grid_slider.value, p = p_slider.value, 
 }
 
 async function step() {
+    if (stepInProgress) return;
+    stepInProgress = true;
+    document.getElementById("btn-step").disabled = true;
+
     const res = await fetch(`/api/session/${sessionId}/step`, {method: "POST"});
     const data = await res.json();
     stepCount++;
-    drawGrid(data.grid);
+
+    let preGrid = data.grid.slice();
+    if (animation_toggle.checked) {
+        const newlyBurned = new Set();
+        for (let i = 0; i < data.grid.length; i++) {
+            if (data.grid[i] === 2) newlyBurned.add(i);
+            if (preGrid[i] === 2) preGrid[i] = 1;
+        }
+        if (newlyBurned.size === 0) {
+        drawGrid(data.grid); // nothing burned — draw instantly, no animation delay
+        } else {
+            let struckCoords = data.last_struck.map(([y, x]) => ({x, y}));
+            let rings = computeFireRings(newlyBurned, struckCoords, size);
+            await animateFire(rings, preGrid);
+        }
+    } else {
+        drawGrid(data.grid);
+    }
+
     document.getElementById("step-count").textContent = stepCount;
     document.getElementById("density-out").textContent = Math.round(data.density * 100) + "%";
+
+    stepInProgress = false;
+    document.getElementById("btn-step").disabled = false;
+}
+
+function computeFireRings(newlyBurned, struckCoords, size) {
+    const depth = new Int32Array(size * size).fill(-1);
+    let frontier = [];
+    for (const {x, y} of struckCoords) {
+        const idx = y * size + x;
+        depth[idx] = 0;
+        frontier.push(idx);
+    }
+
+    let ring = 0;
+    const rings = [frontier.slice()]; // rings[0] = ignition points
+
+    while (frontier.length) {
+        const next = [];
+        for (const idx of frontier) {
+            const x = idx % size, y = (idx / size) | 0;
+            const neighbors = [
+                [x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]
+            ];
+            for (const [nx, ny] of neighbors) {
+                if (nx < 0 || nx >= size || ny < 0 || ny >= size) continue;
+                const nIdx = ny * size + nx;
+                if (depth[nIdx] !== -1) continue;
+                if (!newlyBurned.has(nIdx)) continue; // only expand into cells that actually burned
+                depth[nIdx] = ring + 1;
+                next.push(nIdx);
+            }
+        }
+        ring++;
+        if (next.length) rings.push(next);
+        frontier = next;
+    }
+    return rings; // rings[k] = array of flat indices that are k steps from ignition
+}
+
+const trailLength = 3; // "burning" for this many rings
+function drawFireFrame(rings, currentRing, preGrid) {
+    const frame = preGrid.slice();
+    for (let r = Math.max(0, currentRing - trailLength); r <= currentRing; r++) {
+        if (!rings[r]) continue;
+        for (const idx of rings[r]) frame[idx] = 2; // BURNING
+    }
+    for (let r = 0; r < currentRing - trailLength; r++) {
+        if (!rings[r]) continue;
+        for (const idx of rings[r]) frame[idx] = 0; // EMPTY, already burned out
+    }
+    drawGrid(frame);
+}
+
+function animateFire(rings, preGrid, msPerRing = 30) {
+    return new Promise((resolve) => {
+        let r = 0;
+        const totalRings = rings.length + trailLength;
+        const timer = setInterval(() => {
+            drawFireFrame(rings, r, preGrid);
+            r++;
+            if (r >= totalRings) {
+                clearInterval(timer);
+                resolve();
+            }
+        }, msPerRing);
+    });
 }
 
 async function drawGrid(flatGrid) {
