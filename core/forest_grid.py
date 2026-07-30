@@ -38,12 +38,6 @@ class ForestGrid:
             struck_clusters = np.isin(forest_clusters, struck_numbers)
             self.grid[struck_clusters] = BURNING
 
-        # # 3.b fire spread (burn only adjacent cells each time step)
-        # self.grid[struck] = BURNING
-        # tree_mask = self.grid == TREE
-        # not_activated_mask = cells_activated != ACTIVATED
-        # self.grid[binary_dilation(burning_mask) & tree_mask & not_activated_mask] = BURNING
-
         self.last_struck = struck
         self.grid[burning_mask] = EMPTY
 
