@@ -10,6 +10,7 @@ const f_slider = document.getElementById("f-slider")
 const grid_slider = document.getElementById("grid-slider");
 const fps_slider = document.getElementById("fps-slider")
 const animation_toggle = document.getElementById("animation-toggle");
+const seed_input = document.getElementById("seed-input");
 const offscreen = document.createElement("canvas");
 const offCtx = offscreen.getContext("2d");
 const colors = { 0: "#000000", 1: "#023020", 2: "#ffe135" };
@@ -20,9 +21,10 @@ const CHART_TEXT_MUTED = "#8b949e";
 const CHART_ACCENT = "#58a6ff";
 let fireChart = null;
 
-async function createSession(grid_size = grid_slider.value, p = p_slider.value, f = f_slider.value, seed = null){
+async function createSession(grid_size = grid_slider.value, p = p_slider.value, f = f_slider.value, seed = seed_input.value){
     stepInProgress = false;
     document.getElementById("btn-step").disabled = false;
+    if (seed === "") { seed = null; }
 
     const res = await fetch("/api/session", {
         method: "POST",
@@ -230,6 +232,12 @@ function restartTimer() {
 document.getElementById("btn-step").onclick = () => { setRunning(false); step(); };
 document.getElementById("btn-play").onclick = () => { setRunning(!running); restartTimer(); };
 document.getElementById("btn-reset").onclick = () => { setRunning(false); restartTimer(); createSession(); };
+seed_input.addEventListener("input", () => {
+    if (seed_input.value === "") return;
+    setRunning(false);
+    restartTimer();
+    createSession();
+});
 
 p_slider.addEventListener("input", (e) => {
     changeParameters();

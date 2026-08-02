@@ -110,7 +110,13 @@ button:hover {
   font-weight: 600;
 }
 
-/* ---------- Animation toggle ---------- */
+/* ---------- Animation toggle + seed row ---------- */
+
+.second-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
 .toggle-row {
   display: flex;
@@ -162,6 +168,52 @@ button:hover {
 
 .toggle-row:hover .toggle-switch {
   border-color: var(--accent);
+}
+
+.seed-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.seed-container label {
+  cursor: default;
+}
+
+#seed-input {
+  width: 84px;
+  height: 32px;
+  padding: 0 10px;
+  background-color: #21262d;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  -moz-appearance: textfield;
+}
+
+#seed-input:hover {
+  background-color: #30363d;
+  border-color: var(--accent);
+}
+
+#seed-input:focus {
+  border-color: var(--accent);
+}
+
+#seed-input::-webkit-outer-spin-button,
+#seed-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#seed-input::placeholder {
+  color: var(--text-muted);
 }
 
 /* ---------- Sliders (stacked on the right) ---------- */
