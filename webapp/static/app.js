@@ -14,6 +14,12 @@ const offscreen = document.createElement("canvas");
 const offCtx = offscreen.getContext("2d");
 const colors = { 0: "#000000", 1: "#023020", 2: "#ffe135" };
 
+// hex values matching styles.css theme (Chart.js canvas can't resolve CSS vars)
+const CHART_BORDER = "#30363d";
+const CHART_TEXT_MUTED = "#8b949e";
+const CHART_ACCENT = "#58a6ff";
+let fireChart = null;
+
 async function createSession(grid_size = grid_slider.value, p = p_slider.value, f = f_slider.value, seed = null){
     stepInProgress = false;
     document.getElementById("btn-step").disabled = false;
@@ -28,8 +34,7 @@ async function createSession(grid_size = grid_slider.value, p = p_slider.value, 
     stepCount = 0;
     size = data.size;
     drawGrid(data.grid);
-    document.getElementById("step-count").textContent = stepCount;
-    document.getElementById("density-out").textContent = Math.round(data.density * 100) + "%";
+    updateStats(data);
 }
 
 async function step() {
@@ -59,8 +64,7 @@ async function step() {
         drawGrid(data.grid);
     }
 
-    document.getElementById("step-count").textContent = stepCount;
-    document.getElementById("density-out").textContent = Math.round(data.density * 100) + "%";
+    updateStats(data);
 
     stepInProgress = false;
     document.getElementById("btn-step").disabled = false;
@@ -149,6 +153,60 @@ async function drawGrid(flatGrid) {
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(offscreen, 0, 0, canvas.width, canvas.height);
+}
+
+// shared by createSession() and step(): both need step-count, density, and
+// the fire-size chart refreshed from the response payload
+function updateStats(data) {
+    document.getElementById("step-count").textContent = stepCount;
+    document.getElementById("density-out").textContent = Math.round(data.density * 100) + "%";
+    drawFireSizeChart(data.fire_sizes);
+}
+
+// fire_sizes: { "<size>": <count>, ... } cumulative dict from the backend.
+// Renders/updates a log-log scatter of fire size (x) vs. frequency (y).
+function drawFireSizeChart(fireSizes) {
+    const points = Object.entries(fireSizes || {})
+        .map(([s, c]) => ({ x: Number(s), y: Number(c) }))
+        .filter(p => p.x > 0 && p.y > 0);
+
+    if (fireChart) {
+        fireChart.data.datasets[0].data = points;
+        fireChart.update();
+        return;
+    }
+
+    const ctx = document.getElementById("fire-size-canvas");
+    fireChart = new Chart(ctx, {
+        type: "scatter",
+        data: {
+            datasets: [{
+                label: "Fire sizes",
+                data: points,
+                backgroundColor: CHART_ACCENT,
+                pointRadius: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: "logarithmic",
+                    title: { display: true, text: "Fire size (cells)", color: CHART_TEXT_MUTED },
+                    ticks: { color: CHART_TEXT_MUTED },
+                    grid: { color: CHART_BORDER }
+                },
+                y: {
+                    type: "logarithmic",
+                    title: { display: true, text: "Frequency", color: CHART_TEXT_MUTED },
+                    ticks: { color: CHART_TEXT_MUTED },
+                    grid: { color: CHART_BORDER }
+                }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
 }
 
 async function changeParameters(p = p_slider.value, f = f_slider.value) {

@@ -35,28 +35,37 @@
         </div>
 
         <div class="right-panel">
-          <div class="slider-group">
-            <label for="p-slider">Growth rate p: <span id="p-out">0.01</span></label>
-            <input type="range" min="0" max="0.2" step="0.001" value="0.01" id="p-slider">
-          </div>
+          <div class="slider_container">
+            <div class="slider-group">
+              <label for="p-slider">Growth rate p: <span id="p-out">0.01</span></label>
+              <input type="range" min="0" max="0.2" step="0.001" value="0.01" id="p-slider">
+            </div>
 
-          <div class="slider-group">
-            <label for="f-slider">Lightning strike probability f: <span id="f-out">0.001</span></label>
-            <input type="range" min="0" max="0.02" step="0.0001" value="0.001" id="f-slider">
-          </div>
+            <div class="slider-group">
+              <label for="f-slider">Lightning strike probability f: <span id="f-out">0.001</span></label>
+              <input type="range" min="0" max="0.02" step="0.0001" value="0.001" id="f-slider">
+            </div>
 
-          <div class="slider-group">
-            <label for="grid-slider">Grid size: <span id="size">80</span></label>
-            <input type="range" min="40" max="400" step="1" value="80" id="grid-slider">
-          </div>
+            <div class="slider-group">
+              <label for="grid-slider">Grid size: <span id="size">80</span></label>
+              <input type="range" min="40" max="400" step="1" value="80" id="grid-slider">
+            </div>
 
-          <div class="slider-group">
-            <label for="fps-slider">Steps per second: <span id="fps">20</span></label>
-            <input type="range" min="10" max="60" step="1" value="20" id="fps-slider">
+            <div class="slider-group">
+              <label for="fps-slider">Steps per second: <span id="fps">20</span></label>
+              <input type="range" min="10" max="60" step="1" value="20" id="fps-slider">
+            </div>
           </div>
-        </div>  
+          <div class="chart-group">
+            <label>Fire size distribution (log&ndash;log)</label>
+            <div class="chart-wrapper">
+              <canvas id="fire-size-canvas" role="img" aria-label="Log-log scatter plot of fire size versus frequency">Fire size distribution, log-log scale</canvas>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
       <script src="app.js"></script>
     </body>
 </html>

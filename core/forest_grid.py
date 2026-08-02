@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.ndimage import binary_dilation
 from scipy.ndimage import label
 
 EMPTY, TREE, BURNING = 0, 1, 2
@@ -14,6 +13,7 @@ class ForestGrid:
         self.rng = np.random.default_rng(seed)
         self.last_struck = np.zeros((size, size))
         self.burning = np.zeros((size, size))
+        self.fire_sizes = dict()
 
     def step(self):
         burning_mask = self.grid == BURNING
@@ -34,7 +34,12 @@ class ForestGrid:
         # ignite all cells with the same number
         if struck.any():
             forest_clusters = label(self.grid)[0]
-            struck_numbers = forest_clusters[struck]
+            struck_numbers = np.unique(forest_clusters[struck])
+
+            for number in struck_numbers:
+                fire_size = int(np.count_nonzero(forest_clusters == number))
+                self.fire_sizes[fire_size] = self.fire_sizes.setdefault(fire_size, 0) + 1
+
             struck_clusters = np.isin(forest_clusters, struck_numbers)
             self.grid[struck_clusters] = BURNING
 

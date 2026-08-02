@@ -29,7 +29,8 @@ def create_session(req: CreateSessionRequest):
         "session_id": sid,
         "grid": fg.grid.flatten().tolist(), # change to more efficient solution (bytes)
         "size": fg.size,
-        "density": float((fg.grid == 1).mean())
+        "density": float((fg.grid == 1).mean()),
+        "fire_sizes": fg.fire_sizes
     }
 
 @app.post("/api/session/{sid}/step")
@@ -42,7 +43,8 @@ def step(sid: str):
     return {
         "grid": fg.grid.flatten().tolist(), # change to more efficient solution (bytes)
         "last_struck": struck_coords,
-        "density": float((fg.grid == 1).mean())
+        "density": float((fg.grid == 1).mean()),
+        "fire_sizes": fg.fire_sizes
     }
 
 @app.post("/api/session/{sid}/update")
