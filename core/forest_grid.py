@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from scipy.ndimage import label
 
@@ -18,32 +19,32 @@ class ForestGrid:
     def step(self):
         burning_mask = self.grid == BURNING
 
-        # 1. growth
-        empty_mask = self.grid == EMPTY
-        grow = self.rng.random(size=self.grid.shape, dtype=np.float32) < self.p
-        self.grid[empty_mask & grow] = TREE
-        cells_activated = empty_mask & grow
+        # 1. select cell at random
+        x = math.floor(self.rng.random() * self.size)
+        y = math.floor(self.rng.random() * self.size)
 
-        # 2. lightning
-        tree_mask = self.grid == TREE
-        lightning = self.rng.random(size=self.grid.shape, dtype=np.float32) < self.f
-        struck = lightning & tree_mask & ~cells_activated
+        # 2. event (growth or lightning)
+        if self.grid[x][y] == EMPTY:
+            if self.rng.random() < self.p:
+                self.grid[x][y] = TREE
+        elif self.grid[x][y] == TREE:
+            if self.rng.random() < self.f:
+                self.grid[x][y] = BURNING
 
-        # 3.a fire spread (burn whole cluster in one time step)
-        # every cluster is labeled with a number, get the numbers of the struck cells and
-        # ignite all cells with the same number
-        if struck.any():
+        # 3. fire spread (burn whole cluster in one time step)
+        if self.grid[x][y] == BURNING:
             forest_clusters = label(self.grid)[0]
-            struck_numbers = np.unique(forest_clusters[struck])
+            struck_number = forest_clusters[x][y]
+            struck_cluster = forest_clusters == struck_number
 
-            for number in struck_numbers:
-                fire_size = int(np.count_nonzero(forest_clusters == number))
-                self.fire_sizes[fire_size] = self.fire_sizes.setdefault(fire_size, 0) + 1
+            fire_size = int(np.count_nonzero(struck_cluster))
+            self.fire_sizes[fire_size] = self.fire_sizes.setdefault(fire_size, 0) + 1
 
-            struck_clusters = np.isin(forest_clusters, struck_numbers)
-            self.grid[struck_clusters] = BURNING
+            self.grid[struck_cluster] = BURNING
+            self.last_struck = [[x, y]]
+        else:
+            self.last_struck = []
 
-        self.last_struck = struck
         self.grid[burning_mask] = EMPTY
 
     def set_parameters(self, p, f):
