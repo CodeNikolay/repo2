@@ -21,6 +21,16 @@ const CHART_TEXT_MUTED = "#8b949e";
 const CHART_ACCENT = "#58a6ff";
 let fireChart = null;
 
+async function parsePackedResponse(res) {
+    const buf = await res.arrayBuffer();
+    const view = new DataView(buf);
+    const metaLen = view.getUint32(0, true); // little-endian
+    const metaBytes = new Uint8Array(buf, 4, metaLen);
+    const meta = JSON.parse(new TextDecoder().decode(metaBytes));
+    const grid = new Uint8Array(buf, 4 + metaLen); // remaining bytes = flat grid
+    return { ...meta, grid };
+}
+
 async function createSession(grid_size = grid_slider.value, p = p_slider.value, f = f_slider.value, seed = seed_input.value){
     stepInProgress = false;
     document.getElementById("btn-step").disabled = false;
@@ -31,7 +41,7 @@ async function createSession(grid_size = grid_slider.value, p = p_slider.value, 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ size: grid_size, p, f, seed })
     });
-    const data = await res.json();
+    const data = await parsePackedResponse(res);
     sessionId = data.session_id;
     stepCount = 0;
     size = data.size;
@@ -45,7 +55,7 @@ async function step() {
     document.getElementById("btn-step").disabled = true;
 
     const res = await fetch(`/api/session/${sessionId}/step`, {method: "POST"});
-    const data = await res.json();
+    const data = await parsePackedResponse(res);
     stepCount++;
 
     let preGrid = data.grid.slice();
